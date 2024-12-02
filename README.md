@@ -107,6 +107,7 @@ Python Code:  <br/>
     bash
    >python dashboard.py
 
+5. Dash is running on http://127.0.0.1:8050/
 
 
 <h3/>Expected Output</h3>
