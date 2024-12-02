@@ -1,0 +1,116 @@
+Python Code
+
+
+import sqlite3
+import pandas as pd
+import random
+import geopandas as gpd
+from shapely.geometry import Point
+import dash
+from dash import dcc, html
+import plotly.express as px
+
+# Step 1: SQLite Integration
+# Connect to SQLite database
+conn = sqlite3.connect("fleet_data.db")
+cursor = conn.cursor()
+
+# Create table if it doesn't exist
+cursor.execute("""
+    CREATE TABLE IF NOT EXISTS gps_data (
+        VehicleID TEXT,
+        Latitude REAL,
+        Longitude REAL,
+        Speed REAL,
+        Timestamp TEXT
+    )
+""")
+
+# Generate and insert GPS data
+print("Generating GPS data...")
+data = [
+    (
+        f"V{num}",
+        random.uniform(25.0, 26.0),
+        random.uniform(-80.0, -81.0),
+        random.randint(10, 100),
+        (pd.Timestamp("2024-01-01") + pd.Timedelta(minutes=num)).strftime("%Y-%m-%d %H:%M:%S")  # Convert to string
+    )
+    for num in range(10)
+]
+cursor.executemany("INSERT INTO gps_data VALUES (?, ?, ?, ?, ?)", data)
+conn.commit()
+
+# Query data into a DataFrame
+print("Loading data from SQLite database...")
+df = pd.read_sql_query("SELECT * FROM gps_data", conn)
+conn.close()
+
+# Calculate additional metrics
+df["Distance"] = df["Speed"] * 0.016  # Distance in miles
+print(df.head())
+
+# Step 2: GeoPandas Integration
+# Convert Latitude and Longitude to Point geometry
+print("Converting to GeoDataFrame...")
+df["geometry"] = df.apply(lambda row: Point(row["Longitude"], row["Latitude"]), axis=1)
+
+# Create GeoDataFrame
+gdf = gpd.GeoDataFrame(df, geometry="geometry")
+print("GeoDataFrame created:")
+print(gdf.head())
+
+# Static plot removed to streamline execution
+# If needed, uncomment this block to enable the static plot
+# print("Plotting vehicle locations...")
+# gdf.plot(figsize=(10, 6), color="blue", markersize=50, alpha=0.5)
+# plt.title("Vehicle Locations")
+# plt.xlabel("Longitude")
+# plt.ylabel("Latitude")
+# plt.show()
+
+# Step 3: Dashboard Integration
+# Create interactive map with Dash and Plotly
+print("Creating interactive map...")
+map_fig = px.scatter_geo(
+    gdf,
+    lat=gdf.geometry.y,  # Extract latitude from geometry
+    lon=gdf.geometry.x,  # Extract longitude from geometry
+    color="VehicleID",
+    title="Vehicle Locations (Interactive Map)",
+    hover_data=["Speed", "Distance"]
+)
+
+# Initialize Dash app
+app = dash.Dash(__name__)
+
+# Layout for Dash app
+app.layout = html.Div([
+    html.H1("Fleet Monitoring Dashboard with GeoPandas", style={"text-align": "center"}),
+
+    # Interactive Map
+    html.Div([
+        html.H2("Interactive Map", style={"text-align": "center"}),
+        dcc.Graph(figure=map_fig)
+    ]),
+
+    # GeoDataFrame Summary Table
+    html.Div([
+        html.H2("Vehicle Summary Table", style={"text-align": "center"}),
+        html.Table([
+            html.Tr([html.Th("Vehicle ID"), html.Th("Total Distance (miles)"), html.Th("Average Speed (mph)")]),
+            *[
+                html.Tr([
+                    html.Td(row["VehicleID"]),
+                    html.Td(f"{row['Distance']:.2f}"),
+                    html.Td(f"{row['Speed']:.2f}")
+                ]) for _, row in df.iterrows()
+            ]
+        ], style={"margin": "auto", "border": "1px solid black", "border-collapse": "collapse", "width": "50%"})
+    ])
+])
+
+# Run Dash app
+if __name__ == "__main__":
+    print("Starting Dash app...")
+    app.run_server(debug=True)
