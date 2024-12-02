@@ -116,11 +116,35 @@ Python Code:  <br/>
 1. Interactive Dashboard:
 
    
-- Displays an interactive map of vehicle locations.
-
-- Includes hover details for each vehicle (e.g., speed and distance)
+<br />
+<p align="center">  
+<br />
+<b>Displays an interactive map of vehicle locations<b>:  <br/>
+<img src="https://imgur.com/ciQHMDk.png" height="80%" width="80%" alt="Disk Sanitization Steps"/>
+<br />
+  <br />
+  <br />
+<br />
+<br />
+<p align="center">  
+<br />
+<b>Includes hover details for each vehicle (e.g., speed and distance)<b>:  <br/>
+<img src="https://imgur.com/Loft1hu.png" height="80%" width="80%" alt="Disk Sanitization Steps"/>
+<br />
+  <br />
+  <br />
+<br />
   
-- Shows a summary table of total distances and average speeds for all vehicles.
+<br />
+<p align="center">  
+<br />
+ <b>Shows a summary table of total distances and average speeds for all vehicles</b>:  <br/>
+<img src="https://imgur.com/25lMzDo.png" height="80%" width="80%" alt="Disk Sanitization Steps"/>
+<br />
+  <br />
+  <br />
+<br />
+  
 
 
 
